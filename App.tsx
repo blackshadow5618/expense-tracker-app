@@ -1,19 +1,24 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { Expense, Category } from './types';
-import { categorizeExpense } from './services/geminiService';
 import { useLocalStorage } from './hooks/useLocalStorage';
+import { categorizeExpense } from './services/geminiService';
+
 import Header from './components/Header';
 import ExpenseForm from './components/ExpenseForm';
 import ExpenseList from './components/ExpenseList';
 import ExpenseSummary from './components/ExpenseSummary';
 import CategoryChart from './components/CategoryChart';
 import ExpenseFilter from './components/ExpenseFilter';
-import { ToastProvider, useToast } from './contexts/ToastContext';
+import DataActions from './components/DataActions';
+
 import { ThemeProvider } from './contexts/ThemeContext';
+import { CurrencyProvider } from './contexts/CurrencyContext';
+import { ToastProvider, useToast } from './contexts/ToastContext';
 
 export interface Filters {
   search: string;
-  category: Category | '';
+  category: string;
   startDate: string;
   endDate: string;
 }
@@ -28,100 +33,98 @@ const AppContent: React.FC = () => {
   });
   const { addToast } = useToast();
 
-  const handleAddExpense = useCallback(async (description: string, amount: number) => {
+  const handleAddExpense = async (description: string, amount: number, date: string, currency: string) => {
     try {
       const category = await categorizeExpense(description);
       const newExpense: Expense = {
-        id: new Date().toISOString() + Math.random(), // Add random number to ensure unique ID
+        id: uuidv4(),
         description,
         amount,
         category,
-        date: new Date().toISOString(),
+        date,
+        currency,
       };
       setExpenses(prevExpenses => [...prevExpenses, newExpense]);
       addToast({ message: 'Expense added successfully!', type: 'success' });
     } catch (error) {
       console.error("Failed to add expense:", error);
-      addToast({ message: 'Failed to add expense.', type: 'error' });
-      throw error; // Re-throw to be caught by the form for UI feedback
+      addToast({ message: 'Error adding expense.', type: 'error' });
+      throw error; // re-throw to be caught in form
     }
-  }, [setExpenses, addToast]);
+  };
 
-  const handleDeleteExpense = useCallback((id: string) => {
-    setExpenses(prevExpenses => {
-      const newExpenses = prevExpenses.filter(expense => expense.id !== id);
-      addToast({ message: 'Expense deleted.', type: 'info' });
-      return newExpenses;
-    });
-  }, [setExpenses, addToast]);
+  const handleDeleteExpense = (id: string) => {
+    setExpenses(prevExpenses => prevExpenses.filter(expense => expense.id !== id));
+    addToast({ message: 'Expense deleted.', type: 'info' });
+  };
+  
+  const handleImportExpenses = (importedExpenses: Expense[]) => {
+    const existingIds = new Set(expenses.map(e => e.id));
+    const newExpenses = importedExpenses.filter(e => !existingIds.has(e.id));
+    
+    if (newExpenses.length === 0) {
+      addToast({ message: 'No new expenses to import.', type: 'info' });
+      return;
+    }
+
+    setExpenses(prev => [...prev, ...newExpenses]);
+    addToast({ message: `${newExpenses.length} new expenses imported successfully!`, type: 'success'});
+  };
 
   const filteredExpenses = useMemo(() => {
     return expenses.filter(expense => {
       const expenseDate = new Date(expense.date);
+      const startDate = filters.startDate ? new Date(filters.startDate) : null;
+      const endDate = filters.endDate ? new Date(filters.endDate) : null;
+
+      // Adjust for timezone differences by only comparing date parts
+      if (startDate) startDate.setUTCHours(0, 0, 0, 0);
+      if (endDate) endDate.setUTCHours(23, 59, 59, 999);
       
-      // Search filter
-      if (filters.search && !expense.description.toLowerCase().includes(filters.search.toLowerCase())) {
-        return false;
-      }
-      // Category filter
-      if (filters.category && expense.category !== filters.category) {
-        return false;
-      }
-       // Date range filter
-      if (filters.startDate) {
-        // Start date is inclusive, so we compare from the beginning of the day.
-        const startDate = new Date(filters.startDate);
-        startDate.setHours(0, 0, 0, 0);
-        if (expenseDate < startDate) {
-            return false;
-        }
-      }
-      if (filters.endDate) {
-        // End date is inclusive, so we compare until the end of the day.
-        const endDate = new Date(filters.endDate);
-        endDate.setHours(23, 59, 59, 999);
-        if (expenseDate > endDate) {
-            return false;
-        }
-      }
-      return true;
+      const searchMatch = expense.description.toLowerCase().includes(filters.search.toLowerCase());
+      const categoryMatch = filters.category ? expense.category === filters.category : true;
+      const startDateMatch = startDate ? expenseDate >= startDate : true;
+      const endDateMatch = endDate ? expenseDate <= endDate : true;
+      
+      return searchMatch && categoryMatch && startDateMatch && endDateMatch;
     });
   }, [expenses, filters]);
 
   return (
-    <div className="min-h-screen">
+    <div className="bg-slate-50 dark:bg-slate-900 min-h-screen font-sans transition-colors">
       <Header />
-      <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Main Content: Summary and Chart */}
-          <div className="md:col-span-2 space-y-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          <div className="lg:col-span-1 space-y-6">
+            <ExpenseForm onAddExpense={handleAddExpense} />
+            <DataActions expenses={expenses} onImport={handleImportExpenses} />
+          </div>
+
+          <div className="lg:col-span-2 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <ExpenseSummary expenses={filteredExpenses} />
               <CategoryChart expenses={filteredExpenses} />
             </div>
             <ExpenseFilter filters={filters} onFilterChange={setFilters} />
             <ExpenseList expenses={filteredExpenses} onDeleteExpense={handleDeleteExpense} />
           </div>
-
-          {/* Sidebar: Add Expense Form */}
-          <div className="md:col-span-1">
-            <ExpenseForm onAddExpense={handleAddExpense} />
-          </div>
         </div>
       </main>
     </div>
   );
-}
-
+};
 
 const App: React.FC = () => {
-    return (
-        <ThemeProvider>
-            <ToastProvider>
-                <AppContent />
-            </ToastProvider>
-        </ThemeProvider>
-    )
-}
+  return (
+    <ThemeProvider>
+      <CurrencyProvider>
+        <ToastProvider>
+           <AppContent />
+        </ToastProvider>
+      </CurrencyProvider>
+    </ThemeProvider>
+  );
+};
 
 export default App;

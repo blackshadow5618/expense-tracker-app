@@ -88,7 +88,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange }) => {
               <button
                 type="button"
                 onClick={() => setViewYear(viewYear - 1)}
-                className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-brand-primary dark:focus:ring-offset-slate-800 transition-colors"
+                className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700/60 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-brand-primary dark:focus:ring-offset-slate-800 transition-colors"
                 aria-label="Previous year"
               >
                 <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,7 +102,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange }) => {
               <button
                 type="button"
                 onClick={() => setViewYear(viewYear + 1)}
-                className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-brand-primary dark:focus:ring-offset-slate-800 transition-colors"
+                className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700/60 hover:text-gray-800 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-brand-primary dark:focus:ring-offset-slate-800 transition-colors"
                 aria-label="Next year"
               >
                 <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -119,7 +119,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange }) => {
                   className={`py-2 px-1 text-sm rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-brand-primary transition-colors duration-150 ${
                     index === selectedMonthForViewYear
                       ? 'bg-brand-primary text-white font-semibold shadow-sm'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/40'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700/60'
                   }`}
                 >
                   {month}

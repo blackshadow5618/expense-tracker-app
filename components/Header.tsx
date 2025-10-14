@@ -1,10 +1,14 @@
 import React from 'react';
 import ThemeToggle from './ThemeToggle';
+import CurrencySelector from './CurrencySelector';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 const Header: React.FC = () => {
+  const { baseCurrency, setBaseCurrency, loadingRates } = useCurrency();
+
   return (
-    <header className="bg-white dark:bg-slate-800 shadow-md transition-colors">
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <header className="bg-white dark:bg-slate-800 shadow-md transition-colors border-b border-slate-200 dark:border-slate-700/50">
+      <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
                 <svg className="h-10 w-10 text-brand-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
@@ -13,8 +17,16 @@ const Header: React.FC = () => {
                 </svg>
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 transition-colors">Expense Tracker Pro</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
                 <p className="text-sm text-gray-500 dark:text-gray-400 hidden md:block">Powered by <span className="font-semibold text-brand-primary">Gemini</span></p>
+                <div className="w-48 sm:w-52">
+                  <CurrencySelector
+                      value={baseCurrency}
+                      onChange={(e) => setBaseCurrency(e.target.value)}
+                      disabled={loadingRates}
+                      className="w-full pl-2 pr-8 py-1 text-xs border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 rounded-md focus:ring-brand-primary focus:border-brand-primary transition-colors"
+                  />
+                </div>
                 <ThemeToggle />
             </div>
         </div>

@@ -1,19 +1,37 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect } from 'react';
+import CurrencySelector from './CurrencySelector';
+import { useCurrency } from '../contexts/CurrencyContext';
 
 interface ExpenseFormProps {
-  onAddExpense: (description: string, amount: number) => Promise<void>;
+  onAddExpense: (description: string, amount: number, date: string, currency: string) => Promise<void>;
+}
+
+const getTodayString = () => {
+    const today = new Date();
+    const offset = today.getTimezoneOffset();
+    const todayWithOffset = new Date(today.getTime() - (offset*60*1000));
+    return todayWithOffset.toISOString().split('T')[0];
 }
 
 const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
   const [description, setDescription] = useState('');
   const [amount, setAmount] = useState('');
+  const [date, setDate] = useState(getTodayString());
+  const { baseCurrency } = useCurrency();
+  const [currency, setCurrency] = useState(baseCurrency);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Sync form currency if global base currency changes
+  useEffect(() => {
+    setCurrency(baseCurrency);
+  }, [baseCurrency]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!description || !amount) {
-      setError('Please fill in both fields.');
+    if (!description || !amount || !date || !currency) {
+      setError('Please fill in all fields.');
       return;
     }
     const amountNumber = parseFloat(amount);
@@ -26,9 +44,11 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
     setIsLoading(true);
 
     try {
-      await onAddExpense(description, amountNumber);
+      await onAddExpense(description, amountNumber, date, currency);
       setDescription('');
       setAmount('');
+      setDate(getTodayString());
+      setCurrency(baseCurrency);
     } catch (e) {
       setError('Failed to add expense. Please try again.');
     } finally {
@@ -37,7 +57,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg transition-colors">
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md transition-colors">
       <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Add New Expense</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -54,17 +74,44 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
             disabled={isLoading}
           />
         </div>
-        <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Amount ($)
+        <div className="grid grid-cols-3 gap-4">
+            <div className="col-span-2">
+                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Amount
+                </label>
+                <input
+                    type="number"
+                    id="amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    placeholder="e.g., 4.50"
+                    step="0.01"
+                    className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-brand-primary focus:border-brand-primary transition-colors"
+                    disabled={isLoading}
+                />
+            </div>
+             <div>
+                <label htmlFor="currency" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Currency
+                </label>
+                <CurrencySelector 
+                    id="currency"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                    disabled={isLoading}
+                />
+            </div>
+        </div>
+         <div>
+          <label htmlFor="date" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Date
           </label>
           <input
-            type="number"
-            id="amount"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            placeholder="e.g., 4.50"
-            className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-brand-primary focus:border-brand-primary transition-colors"
+            type="date"
+            id="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-900 dark:text-white focus:outline-none focus:ring-brand-primary focus:border-brand-primary transition-colors [color-scheme:light] dark:[color-scheme:dark]"
             disabled={isLoading}
           />
         </div>

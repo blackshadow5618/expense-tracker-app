@@ -20,19 +20,21 @@ const ExpenseFilter: React.FC<ExpenseFilterProps> = ({ filters, onFilterChange }
   };
   
   const handleReset = () => {
-    onFilterChange({
-        search: '',
-        category: '',
-        startDate: '',
-        endDate: '',
-    });
-    addToast({ message: 'Filters reset.', type: 'info' });
+    if (window.confirm('Are you sure you want to reset all filters?')) {
+      onFilterChange({
+          search: '',
+          category: '',
+          startDate: '',
+          endDate: '',
+      });
+      addToast({ message: 'Filters reset.', type: 'info' });
+    }
   };
 
   const hasActiveFilters = filters.search || filters.category || filters.startDate || filters.endDate;
 
   return (
-    <div className="bg-white dark:bg-slate-800 p-4 rounded-lg shadow-lg transition-colors">
+    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md transition-colors">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Search Input */}
         <div>

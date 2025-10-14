@@ -18,4 +18,5 @@ export interface Expense {
   amount: number;
   category: Category;
   date: string;
+  currency: string;
 }
