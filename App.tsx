@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { Expense, Category } from './types';
+import { Expense, Category, Filters } from './types';
 import { useLocalStorage } from './hooks/useLocalStorage';
 import { categorizeExpense } from './services/geminiService';
 
@@ -11,27 +11,34 @@ import ExpenseSummary from './components/ExpenseSummary';
 import CategoryChart from './components/CategoryChart';
 import ExpenseFilter from './components/ExpenseFilter';
 import DataActions from './components/DataActions';
+import Reports from './components/Reports';
+import EditExpenseModal from './components/EditExpenseModal';
 
 import { ThemeProvider } from './contexts/ThemeContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
 import { ToastProvider, useToast } from './contexts/ToastContext';
 
-export interface Filters {
-  search: string;
-  category: string;
-  startDate: string;
-  endDate: string;
-}
-
 const AppContent: React.FC = () => {
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', []);
-  const [filters, setFilters] = useState<Filters>({
+  const [editingExpense, setEditingExpense] = React.useState<Expense | null>(null);
+  const [filters, setFilters] = React.useState<Filters>({
     search: '',
     category: '',
     startDate: '',
     endDate: '',
   });
   const { addToast } = useToast();
+
+  const [activeTab, setActiveTab] = React.useState('transactions');
+  
+  const [selectedDateString, setSelectedDateString] = useLocalStorage<string>(
+    'selectedDate',
+    new Date().toISOString()
+  );
+  const selectedDate = React.useMemo(() => new Date(selectedDateString), [selectedDateString]);
+  const handleDateChange = (date: Date) => {
+    setSelectedDateString(date.toISOString());
+  };
 
   const handleAddExpense = async (description: string, amount: number, date: string, currency: string) => {
     try {
@@ -58,6 +65,20 @@ const AppContent: React.FC = () => {
     addToast({ message: 'Expense deleted.', type: 'info' });
   };
   
+  const handleStartEdit = (expense: Expense) => {
+    setEditingExpense(expense);
+  };
+
+  const handleUpdateExpense = (updatedExpense: Expense) => {
+    setExpenses(prevExpenses => 
+      prevExpenses.map(expense => 
+        expense.id === updatedExpense.id ? updatedExpense : expense
+      )
+    );
+    addToast({ message: 'Expense updated successfully!', type: 'success' });
+    setEditingExpense(null);
+  };
+
   const handleImportExpenses = (importedExpenses: Expense[]) => {
     const existingIds = new Set(expenses.map(e => e.id));
     const newExpenses = importedExpenses.filter(e => !existingIds.has(e.id));
@@ -71,7 +92,7 @@ const AppContent: React.FC = () => {
     addToast({ message: `${newExpenses.length} new expenses imported successfully!`, type: 'success'});
   };
 
-  const filteredExpenses = useMemo(() => {
+  const filteredExpenses = React.useMemo(() => {
     return expenses.filter(expense => {
       const expenseDate = new Date(expense.date);
       const startDate = filters.startDate ? new Date(filters.startDate) : null;
@@ -103,14 +124,63 @@ const AppContent: React.FC = () => {
 
           <div className="lg:col-span-2 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <ExpenseSummary expenses={filteredExpenses} />
-              <CategoryChart expenses={filteredExpenses} />
+              <ExpenseSummary expenses={expenses} selectedDate={selectedDate} onDateChange={handleDateChange} />
+              <CategoryChart expenses={expenses} selectedDate={selectedDate} />
             </div>
-            <ExpenseFilter filters={filters} onFilterChange={setFilters} />
-            <ExpenseList expenses={filteredExpenses} onDeleteExpense={handleDeleteExpense} />
+            
+            <div>
+              <div className="border-b border-gray-200 dark:border-gray-700">
+                <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+                  <button
+                    onClick={() => setActiveTab('transactions')}
+                    className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      activeTab === 'transactions'
+                        ? 'border-brand-primary text-brand-primary'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    Recent Transactions
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('reports')}
+                    className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
+                      activeTab === 'reports'
+                        ? 'border-brand-primary text-brand-primary'
+                        : 'border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    Spending Reports
+                  </button>
+                </nav>
+              </div>
+
+              <div className="mt-6">
+                {activeTab === 'transactions' && (
+                  <div className="space-y-6">
+                    <ExpenseFilter filters={filters} onFilterChange={setFilters} />
+                    <ExpenseList 
+                      expenses={filteredExpenses} 
+                      onDeleteExpense={handleDeleteExpense}
+                      onEditExpense={handleStartEdit}
+                    />
+                  </div>
+                )}
+                {activeTab === 'reports' && (
+                  <Reports expenses={expenses} selectedDate={selectedDate} />
+                )}
+              </div>
+            </div>
+
           </div>
         </div>
       </main>
+      {editingExpense && (
+        <EditExpenseModal 
+          expense={editingExpense}
+          onSave={handleUpdateExpense}
+          onClose={() => setEditingExpense(null)}
+        />
+      )}
     </div>
   );
 };

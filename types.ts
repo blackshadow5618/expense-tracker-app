@@ -1,4 +1,3 @@
-
 export enum Category {
   Groceries = "Groceries",
   DiningOut = "Dining Out",
@@ -19,4 +18,11 @@ export interface Expense {
   category: Category;
   date: string;
   currency: string;
+}
+
+export interface Filters {
+  search: string;
+  category: string;
+  startDate: string;
+  endDate: string;
 }

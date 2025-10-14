@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React from 'react';
 import { useLocalStorage } from '../hooks/useLocalStorage';
 import { getExchangeRates } from '../services/currencyService';
 
@@ -11,22 +11,22 @@ interface CurrencyContextType {
   loadingRates: boolean;
 }
 
-const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined);
+const CurrencyContext = React.createContext<CurrencyContextType | undefined>(undefined);
 
 export const useCurrency = () => {
-  const context = useContext(CurrencyContext);
+  const context = React.useContext(CurrencyContext);
   if (!context) {
     throw new Error('useCurrency must be used within a CurrencyProvider');
   }
   return context;
 };
 
-export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const CurrencyProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [baseCurrency, setBaseCurrency] = useLocalStorage<string>('baseCurrency', 'USD');
-    const [rates, setRates] = useState<{ [key: string]: number } | null>(null);
-    const [loadingRates, setLoadingRates] = useState(true);
+    const [rates, setRates] = React.useState<{ [key: string]: number } | null>(null);
+    const [loadingRates, setLoadingRates] = React.useState(true);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const fetchRates = async () => {
             setLoadingRates(true);
             const data = await getExchangeRates(baseCurrency);
@@ -38,7 +38,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         fetchRates();
     }, [baseCurrency]);
 
-    const convert = useCallback((amount: number, fromCurrency: string): number | null => {
+    const convert = React.useCallback((amount: number, fromCurrency: string): number | null => {
         if (!rates) return null;
         if (fromCurrency === baseCurrency) return amount;
         
@@ -55,7 +55,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         return null; 
     }, [rates, baseCurrency]);
 
-    const formatCurrency = useCallback((amount: number, currencyCode?: string) => {
+    const formatCurrency = React.useCallback((amount: number, currencyCode?: string) => {
         const code = currencyCode || baseCurrency;
         try {
             return new Intl.NumberFormat(undefined, {

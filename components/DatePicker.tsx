@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+
+import React from 'react';
 
 interface DatePickerProps {
   selectedDate: Date;
@@ -11,13 +12,13 @@ const MONTHS_SHORT = [
 ];
 
 const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [viewYear, setViewYear] = useState(selectedDate.getFullYear());
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const popoverRef = useRef<HTMLDivElement>(null);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [viewYear, setViewYear] = React.useState(selectedDate.getFullYear());
+  const wrapperRef = React.useRef<HTMLDivElement>(null);
+  const popoverRef = React.useRef<HTMLDivElement>(null);
 
   // Close popover on outside click
-  useEffect(() => {
+  React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
@@ -30,12 +31,12 @@ const DatePicker: React.FC<DatePickerProps> = ({ selectedDate, onChange }) => {
   }, [wrapperRef]);
   
   // Reset view year when selected date changes from outside
-  useEffect(() => {
+  React.useEffect(() => {
     setViewYear(selectedDate.getFullYear());
   }, [selectedDate]);
 
   // Handle the opening animation
-  useEffect(() => {
+  React.useEffect(() => {
     if (isOpen && popoverRef.current) {
       // We use requestAnimationFrame to ensure the element has been painted before we start the transition.
       requestAnimationFrame(() => {

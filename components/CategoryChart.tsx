@@ -1,11 +1,12 @@
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Expense, Category } from '../types';
 import { useCurrency } from '../contexts/CurrencyContext';
 
 interface CategoryChartProps {
   expenses: Expense[];
+  selectedDate: Date;
 }
 
 const COLORS: { [key in Category]: string } = {
@@ -28,8 +29,27 @@ const LoadingSpinner: React.FC = () => (
     </svg>
 );
 
-const CategoryChart: React.FC<CategoryChartProps> = ({ expenses }) => {
+const CategoryChart: React.FC<CategoryChartProps> = ({ expenses, selectedDate }) => {
   const { convert, formatCurrency, loadingRates } = useCurrency();
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const monthlyExpenses = React.useMemo(() => {
+    const selectedMonth = selectedDate.getMonth();
+    const selectedYear = selectedDate.getFullYear();
+    return expenses.filter(expense => {
+      const expenseDate = new Date(expense.date);
+      return expenseDate.getMonth() === selectedMonth && expenseDate.getFullYear() === selectedYear;
+    });
+  }, [expenses, selectedDate]);
   
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
@@ -43,10 +63,10 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ expenses }) => {
     return null;
   };
 
-  const chartData = useMemo(() => {
+  const chartData = React.useMemo(() => {
     if (loadingRates || !convert) return [];
 
-    const categoryTotals = expenses.reduce((acc, expense) => {
+    const categoryTotals = monthlyExpenses.reduce((acc, expense) => {
       const convertedAmount = convert(expense.amount, expense.currency);
       if (convertedAmount !== null) {
         acc[expense.category] = (acc[expense.category] || 0) + convertedAmount;
@@ -58,9 +78,9 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ expenses }) => {
       name: name as Category,
       value: value || 0,
     }));
-  }, [expenses, convert, loadingRates]);
+  }, [monthlyExpenses, convert, loadingRates]);
 
-  const total = useMemo(() => {
+  const total = React.useMemo(() => {
     return chartData.reduce((sum, entry) => sum + entry.value, 0);
   }, [chartData]);
 
@@ -84,11 +104,11 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ expenses }) => {
     );
   }
 
-  if (expenses.length === 0 || chartData.length === 0) {
+  if (monthlyExpenses.length === 0 || chartData.length === 0) {
     return (
       <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md flex items-center justify-center h-full transition-colors">
          <div className="text-center">
-            <p className="text-gray-500 dark:text-gray-400">No data for chart.</p>
+            <p className="text-gray-500 dark:text-gray-400">No data for this month.</p>
             <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Your spending breakdown will appear here.</p>
         </div>
       </div>
@@ -99,7 +119,7 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ expenses }) => {
     <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md h-full transition-colors">
       <h3 className="text-lg font-medium text-gray-500 dark:text-gray-400 mb-4">Spending by Category</h3>
       <div>
-        <ResponsiveContainer width="100%" height={250}>
+        <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
               data={chartData}
@@ -118,10 +138,14 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ expenses }) => {
             <Tooltip content={<CustomTooltip />} />
             <Legend
               iconSize={12}
-              layout="vertical"
-              verticalAlign="middle"
-              align="right"
-              wrapperStyle={{ paddingLeft: '20px' }}
+              layout={isMobile ? 'horizontal' : 'vertical'}
+              verticalAlign={isMobile ? 'bottom' : 'middle'}
+              align={isMobile ? 'center' : 'right'}
+              wrapperStyle={
+                isMobile 
+                ? { paddingTop: '20px', fontSize: '12px' } 
+                : { paddingLeft: '20px' }
+              }
               formatter={renderLegendText}
             />
           </PieChart>

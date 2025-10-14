@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import React from 'react';
 import { ToastType } from '../contexts/ToastContext';
 
 interface ToastProps {
@@ -32,9 +33,9 @@ const BG_COLORS: Record<ToastType, string> = {
 };
 
 const Toast: React.FC<ToastProps> = ({ message, type, onDismiss }) => {
-    const [isExiting, setIsExiting] = useState(false);
+    const [isExiting, setIsExiting] = React.useState(false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const timer = setTimeout(() => {
             setIsExiting(true);
         }, 4000); // Auto-dismiss after 4 seconds
@@ -42,7 +43,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, onDismiss }) => {
         return () => clearTimeout(timer);
     }, []);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (isExiting) {
             const timer = setTimeout(onDismiss, 300); // Duration of the exit animation
             return () => clearTimeout(timer);

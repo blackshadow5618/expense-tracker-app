@@ -6,7 +6,14 @@ import { useCurrency } from '../contexts/CurrencyContext';
 interface ExpenseListProps {
   expenses: Expense[];
   onDeleteExpense: (id: string) => void;
+  onEditExpense: (expense: Expense) => void;
 }
+
+const EditIcon = ({ className }: { className?: string }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+    </svg>
+);
 
 const TrashIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -29,7 +36,7 @@ const EmptyIllustration = ({ className }: { className?: string }) => (
 );
 
 
-const ExpenseListItem: React.FC<{ expense: Expense; onDeleteExpense: (id: string) => void }> = ({ expense, onDeleteExpense }) => {
+const ExpenseListItem: React.FC<{ expense: Expense; onDeleteExpense: (id: string) => void; onEditExpense: (expense: Expense) => void; }> = ({ expense, onDeleteExpense, onEditExpense }) => {
   const { formatCurrency } = useCurrency();
   
   const formattedDate = new Date(expense.date).toLocaleDateString('en-US', {
@@ -47,7 +54,7 @@ const ExpenseListItem: React.FC<{ expense: Expense; onDeleteExpense: (id: string
   };
 
   return (
-    <li className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg transition-all duration-200 ease-in-out hover:bg-gray-100 dark:hover:bg-slate-700/60 hover:shadow-lg hover:-translate-y-px">
+    <li className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-lg transition-all duration-200 ease-in-out hover:bg-gray-100 dark:hover:bg-slate-700/60 hover:shadow-lg hover:-translate-y-px">
       <div className="flex items-center space-x-4 min-w-0">
         <div className="flex-shrink-0 h-12 w-12 flex items-center justify-center bg-indigo-100 dark:bg-indigo-500/20 rounded-full text-brand-primary dark:text-indigo-400">
           <CategoryIcon category={expense.category} className="h-6 w-6" />
@@ -57,8 +64,15 @@ const ExpenseListItem: React.FC<{ expense: Expense; onDeleteExpense: (id: string
           <p className="text-sm text-gray-500 dark:text-gray-400">{expense.category} &bull; {formattedDate}</p>
         </div>
       </div>
-      <div className="flex items-center space-x-4 flex-shrink-0">
+      <div className="flex items-center self-end sm:self-center space-x-4 flex-shrink-0">
         <p className="font-bold text-lg text-gray-900 dark:text-gray-100 whitespace-nowrap">{formattedAmount}</p>
+        <button
+          onClick={() => onEditExpense(expense)}
+          className="text-gray-400 hover:text-brand-primary focus:outline-none focus:text-brand-primary transition-colors"
+          aria-label={`Edit expense: ${expense.description}`}
+        >
+          <EditIcon className="h-5 w-5" />
+        </button>
         <button
           onClick={handleDelete}
           className="text-gray-400 hover:text-red-500 focus:outline-none focus:text-red-500 transition-colors"
@@ -72,7 +86,7 @@ const ExpenseListItem: React.FC<{ expense: Expense; onDeleteExpense: (id: string
 };
 
 
-const ExpenseList: React.FC<ExpenseListProps> = ({ expenses, onDeleteExpense }) => {
+const ExpenseList: React.FC<ExpenseListProps> = ({ expenses, onDeleteExpense, onEditExpense }) => {
   const sortedExpenses = [...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
@@ -91,7 +105,7 @@ const ExpenseList: React.FC<ExpenseListProps> = ({ expenses, onDeleteExpense }) 
       ) : (
         <ul className="space-y-3">
           {sortedExpenses.map((expense) => (
-            <ExpenseListItem key={expense.id} expense={expense} onDeleteExpense={onDeleteExpense} />
+            <ExpenseListItem key={expense.id} expense={expense} onDeleteExpense={onDeleteExpense} onEditExpense={onEditExpense} />
           ))}
         </ul>
       )}

@@ -1,4 +1,5 @@
-import React, { useRef } from 'react';
+
+import React from 'react';
 import { Expense } from '../types';
 import { exportToCSV, importFromCSV } from '../services/csvService';
 import { useToast } from '../contexts/ToastContext';
@@ -22,7 +23,7 @@ const UploadIcon = ({ className }: { className?: string }) => (
 
 const DataActions: React.FC<DataActionsProps> = ({ expenses, onImport }) => {
   const { addToast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleExport = () => {
     try {

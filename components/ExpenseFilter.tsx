@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Category } from '../types';
-import { Filters } from '../App';
+import { Filters } from '../types';
 import { useToast } from '../contexts/ToastContext';
 
 interface ExpenseFilterProps {

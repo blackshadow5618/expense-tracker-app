@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 // FIX: The return type annotation `React.Dispatch<React.SetStateAction<T>>` requires the `React` namespace, which was not imported.
 export function useLocalStorage<T,>(key: string, initialValue: T): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [storedValue, setStoredValue] = useState<T>(() => {
+  const [storedValue, setStoredValue] = React.useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
@@ -12,7 +12,7 @@ export function useLocalStorage<T,>(key: string, initialValue: T): [T, React.Dis
     }
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     try {
       const valueToStore =
         typeof storedValue === 'function'

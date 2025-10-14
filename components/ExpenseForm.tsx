@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import CurrencySelector from './CurrencySelector';
 import { useCurrency } from '../contexts/CurrencyContext';
 
@@ -15,16 +15,16 @@ const getTodayString = () => {
 }
 
 const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
-  const [description, setDescription] = useState('');
-  const [amount, setAmount] = useState('');
-  const [date, setDate] = useState(getTodayString());
+  const [description, setDescription] = React.useState('');
+  const [amount, setAmount] = React.useState('');
+  const [date, setDate] = React.useState(getTodayString());
   const { baseCurrency } = useCurrency();
-  const [currency, setCurrency] = useState(baseCurrency);
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [currency, setCurrency] = React.useState(baseCurrency);
+  const [error, setError] = React.useState('');
+  const [isLoading, setIsLoading] = React.useState(false);
   
   // Sync form currency if global base currency changes
-  useEffect(() => {
+  React.useEffect(() => {
     setCurrency(baseCurrency);
   }, [baseCurrency]);
 
@@ -74,8 +74,8 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
             disabled={isLoading}
           />
         </div>
-        <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="sm:col-span-2">
                 <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     Amount
                 </label>
