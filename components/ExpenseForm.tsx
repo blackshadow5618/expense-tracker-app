@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface ExpenseFormProps {
@@ -38,11 +37,11 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Add New Expense</h2>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg transition-colors">
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">Add New Expense</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Description
           </label>
           <input
@@ -51,12 +50,12 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="e.g., Coffee with a friend"
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-primary focus:border-brand-primary"
+            className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-brand-primary focus:border-brand-primary transition-colors"
             disabled={isLoading}
           />
         </div>
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Amount ($)
           </label>
           <input
@@ -65,7 +64,7 @@ const ExpenseForm: React.FC<ExpenseFormProps> = ({ onAddExpense }) => {
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             placeholder="e.g., 4.50"
-            className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-brand-primary focus:border-brand-primary"
+            className="mt-1 block w-full px-3 py-2 bg-white dark:bg-slate-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 dark:placeholder-gray-500 text-gray-900 dark:text-white focus:outline-none focus:ring-brand-primary focus:border-brand-primary transition-colors"
             disabled={isLoading}
           />
         </div>

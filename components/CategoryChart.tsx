@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Expense, Category } from '../types';
@@ -23,9 +22,9 @@ const COLORS: { [key in Category]: string } = {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-2 border border-gray-200 rounded-md shadow-md">
-        <p className="font-semibold">{`${payload[0].name}`}</p>
-        <p className="text-gray-700">{`$${payload[0].value.toFixed(2)}`}</p>
+      <div className="bg-white dark:bg-slate-700 p-2 border border-gray-200 dark:border-gray-600 rounded-md shadow-md">
+        <p className="font-semibold text-gray-900 dark:text-gray-100">{`${payload[0].name}`}</p>
+        <p className="text-gray-700 dark:text-gray-200">{`$${payload[0].value.toFixed(2)}`}</p>
       </div>
     );
   }
@@ -46,20 +45,36 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ expenses }) => {
     }));
   }, [expenses]);
 
+  const total = useMemo(() => {
+    return chartData.reduce((sum, entry) => sum + entry.value, 0);
+  }, [chartData]);
+
+  const renderLegendText = (value: string) => {
+    const item = chartData.find(data => data.name === value);
+    if (!item || total === 0) {
+      return <span className="text-sm text-gray-700 dark:text-gray-300">{value}</span>;
+    }
+    const percent = (item.value / total) * 100;
+    const displayPercent = percent < 1 && percent > 0 ? '<1' : percent.toFixed(0);
+
+    return <span className="text-sm text-gray-700 dark:text-gray-300">{value} ({displayPercent}%)</span>;
+  };
+
+
   if (expenses.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-lg flex items-center justify-center h-full">
+      <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg flex items-center justify-center h-full transition-colors">
          <div className="text-center">
-            <p className="text-gray-500">No data for chart.</p>
-            <p className="text-gray-400 text-sm mt-1">Your spending breakdown will appear here.</p>
+            <p className="text-gray-500 dark:text-gray-400">No data for chart.</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">Your spending breakdown will appear here.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg h-full">
-      <h3 className="text-lg font-medium text-gray-500 mb-4">Spending by Category</h3>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-lg shadow-lg h-full transition-colors">
+      <h3 className="text-lg font-medium text-gray-500 dark:text-gray-400 mb-4">Spending by Category</h3>
       <ResponsiveContainer width="100%" height={250}>
         <PieChart>
           <Pie
@@ -77,7 +92,14 @@ const CategoryChart: React.FC<CategoryChartProps> = ({ expenses }) => {
             ))}
           </Pie>
           <Tooltip content={<CustomTooltip />} />
-          <Legend iconSize={10} layout="vertical" verticalAlign="middle" align="right" />
+          <Legend
+            iconSize={12}
+            layout="vertical"
+            verticalAlign="middle"
+            align="right"
+            wrapperStyle={{ paddingLeft: '20px' }}
+            formatter={renderLegendText}
+          />
         </PieChart>
       </ResponsiveContainer>
     </div>
