@@ -1,0 +1,5 @@
+{
+  "name": "Expense Tracker Pro",
+  "description": "A dynamic expense tracker that uses Gemini to automatically categorize your spending and provides insightful visualizations to help you manage your finances.",
+  "requestFramePermissions": []
+}
