@@ -63,8 +63,7 @@ const Reports: React.FC<ReportsProps> = ({ expenses, selectedDate }) => {
         return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear;
     });
 
-    // FIX: Use a generic type on `reduce` for stronger type inference of the accumulator.
-    const categoryStats = monthExpenses.reduce<Record<string, { total: number; count: number }>>((acc, expense) => {
+    const categoryStats = monthExpenses.reduce((acc, expense) => {
         const category = expense.category;
         if (!acc[category]) {
             acc[category] = { total: 0, count: 0 };
@@ -72,7 +71,7 @@ const Reports: React.FC<ReportsProps> = ({ expenses, selectedDate }) => {
         acc[category].total += expense.amount;
         acc[category].count += 1;
         return acc;
-    }, {});
+    }, {} as Record<Category, { total: number; count: number }>);
 
     return Object.entries(categoryStats)
         .map(([category, stats]) => ({

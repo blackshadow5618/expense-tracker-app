@@ -25,7 +25,6 @@ export const categorizeExpense = async (description: string): Promise<Category> 
           },
           required: ["category"],
         },
-        // FIX: systemInstruction must be inside the config object.
         systemInstruction: `You are an expert expense categorization engine. Given a list of possible categories and an expense description, you must assign the most relevant category. Your response must be a valid JSON object matching the provided schema.`
       },
     });
